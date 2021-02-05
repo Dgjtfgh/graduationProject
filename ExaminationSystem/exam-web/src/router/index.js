@@ -4,7 +4,8 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-export default new Router({
+
+let router = new Router({
   routes: [
     {
       path: '/',
@@ -24,22 +25,58 @@ export default new Router({
             {
               path: 'exam',
               name: 'Exam',
-              component: () => import('@/components/Exam/index')
+              component: () => import('@/components/Exam/index'),
+              meta: {
+                requireAuth: true, role: '学生'
+              }
             },
             {
               path: 'practice',
               name: 'Practice',
-              component: () => import('@/components/PracticeView/index')
+              component: () => import('@/components/PracticeView/index'),
+              meta: {
+                requireAuth: true, role: '学生'
+              }
             },
             {
               path: 'exampaper',
               name: 'ExamPaper',
-              component: () => import('@/components/ExamPaper/index')
+              component: () => import('@/components/ExamPaper/index'),
+              meta: {
+                requireAuth: true, role: '学生'
+              }
             },
             {
               path: 'achievement',
               name: 'Achievement',
-              component: () => import('@/components/Achievement/index')
+              component: () => import('@/components/Achievement/index'),
+              meta: {
+                requireAuth: true, role: '学生'
+              }
+            },
+            {
+              path: 'makepaper',
+              name: 'MakePaper',
+              component: () => import('@/components/MakePaper/index'),
+              meta: {
+                requireAuth: true, role: '老师'
+              }
+            },
+            {
+              path: 'mangerpaper',
+              name: 'MangerPaper',
+              component: () => import('@/components/MangerPaper/index'),
+              meta: {
+                requireAuth: true, role: '老师'
+              }
+            },
+            {
+              path: 'correctpaper',
+              name: 'CorrectPaper',
+              component: () => import('@/components/CorrectPaper/index'),
+              meta: {
+                requireAuth: true, role: '老师'
+              }
             }
           // ]
         // }
@@ -54,6 +91,36 @@ export default new Router({
       path: '/register',
       name: 'Register',
       component: () => import('@/components/Register')
+    },
+    {
+      path: '/404',
+      name: 'Error',
+      component: () => import('@/components/Error')
     }
   ]
-})
+});
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.requireAuth) { // 判断该路由是否需要登录权限
+    if (localStorage.getItem('username')) { // 通过vuex state获取当前的token是否存在
+      if(localStorage.getItem('sf') == to.meta.role) {
+        next();
+      } else {
+        next({
+          path: '/404'
+        })
+      }
+    } else {
+      next({
+        path: '/login',
+        query: {
+          redirect: to.fullPath
+        } // 将跳转的路由path作为参数，登录成功后跳转到该路由
+      })
+    }
+  } else {
+    next();
+  }  
+});
+
+export default router

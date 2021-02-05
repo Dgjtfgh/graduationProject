@@ -15,9 +15,13 @@
             <el-menu-item index="/practice">自主练习</el-menu-item>
             <el-menu-item index="/exam">课程考试</el-menu-item>
           </el-submenu>
-          <el-menu-item v-else index="/makepaper">出试卷</el-menu-item>
+          <el-submenu v-else index="3">
+            <template slot="title">试卷管理</template>
+            <el-menu-item index="/makepaper">出试卷</el-menu-item>
+            <el-menu-item index="/mangerpaper">未考试卷</el-menu-item>
+          </el-submenu>
           <el-menu-item v-if="this.sf" index="/achievement">成绩查询</el-menu-item>
-          <el-menu-item v-else index="/correct">批改试卷</el-menu-item>
+          <el-menu-item v-else index="/correctpaper">批改试卷</el-menu-item>
         </el-menu>
     </div>
     <div class="operate">

@@ -1,11 +1,11 @@
 <template>
-  <div id="userinfo">
-      
+  <div id="correctpaper">
+      correctpaper
   </div>
 </template>
 <script>
 export default {
-    name: 'UserInfo'
+    name: 'CorrectPaper'
 }
 </script>
 <style lang="less" scoped>

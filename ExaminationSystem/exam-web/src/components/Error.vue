@@ -1,11 +1,11 @@
 <template>
-  <div id="userinfo">
-      
+  <div id="Error">
+      Error  /404
   </div>
 </template>
 <script>
 export default {
-    name: 'UserInfo'
+    name: 'Error'
 }
 </script>
 <style lang="less" scoped>

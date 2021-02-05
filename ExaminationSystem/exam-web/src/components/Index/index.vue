@@ -11,13 +11,23 @@
       <!-- </el-col> -->
       <!-- <el-col :span="9"> -->
         <div class="content content1-right">
-          <p>个人信息</p>
-          <div><label for="">姓名：</label><input type="text" v-model="name"/></div>
-          <div><label for="">学号：</label><input type="text" v-model="no" /></div>  
-          <div><label for="">学院：</label><input type="text" v-model="college" /></div>  
-          <div><label for="">专业：</label><input type="text" v-model="professional" /></div>  
-          <div>
-            <button>修改密码</button>
+          <div class="info">
+            <p>个人信息</p>
+            <div><label for="">姓名：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="name"/></div>
+            <div><label for="">学号：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="no" /></div>  
+            <div><label for="">学院：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="college" /></div>  
+            <div><label for="">专业：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="professional" /></div>
+            <div><label for="">性别：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="sex" /></div>
+            <div><label for="">身份：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="sf" /></div>  
+            <div>
+              <button @click="changeUserInfo">{{this.changeButton}}</button>
+            </div>
+          </div>
+          <div class="pass">
+            <div><label for="">原密码：</label><input type="text" v-model="oldPassword" /></div>
+            <div><label for="">新密码：</label><input type="text" v-model="newPassword" /></div>
+            <div><label for="">验密码：</label><input type="text" v-model="checkNewPass" /></div>
+            <div><button>修改密码</button></div>
           </div>
         </div>
       <!-- </el-col> -->
@@ -31,7 +41,26 @@ export default {
         name: '肖文凯',
         no: '201720181819',
         college: '软件学院',
-        professional: '软件工程'
+        professional: '软件工程',
+        sex: '男',
+        sf: '学生',
+        oldPassword: '',
+        newPassword: '',
+        checkNewPass: '',
+        changeButton: '修改信息',
+        changeInfo: false,
+      }
+    },
+    methods: {
+      changeUserInfo() {
+        console.log(this.changeInfo);
+        if(this.changeInfo) {
+          // 发送请求
+          this.changeButton = '修改信息';
+        } else {
+          this.changeButton = '确认';
+        }
+        this.changeInfo = !this.changeInfo;
       }
     }
 }
@@ -57,41 +86,67 @@ export default {
     min-height: 40px;
     border-radius: 4px;
     background: #cedbf0;
+    
+  }
+  .content1-left {
+    min-width: 600px;
+    width: 60%;
     p{
       text-align: left;
       text-indent: 2em;
     }
   }
-  .content1-left {
-    width: 60%;
-  }
   .content1-right {
+    min-width: 500px;
+    display: flex;
+    justify-content: space-around;
     margin-top: 30px;
     width: 50%;
-    div {
+    input:focus{
+      outline:none;
+    }
+    button {
+      background-color: #fff;
+      width: 100px;
+      height: 30px;
+      border-radius: 4px;
+      margin-top: 10px;
+      border: none;
+    }
+    button:focus{
+      outline:none;
+    }
+    button:hover{
+      background-color: rgb(177, 187, 218);
+    }
+    .inputdis{
+      border:black;
+      pointer-events:auto;
+    }
+    .inputabled{
+      border: none;
+      pointer-events: none;
+    }
+    .info {
       margin-bottom: 2px;
+      div {
+        margin-bottom: 5px;
+      }
       input{
-        border: none;
-        pointer-events: none;
+        // border: none;
+        // pointer-events: none;
         // background-color: transparent;
       }
-      input:focus{
-        outline:none;
+    }
+    .pass {
+      // width: 50%;
+      padding-top: 10%;
+      div {
+        margin-bottom: 20px;
       }
-      button {
-        background-color: #fff;
-        width: 100px;
-        height: 30px;
-        border-radius: 4px;
-        margin-top: 20px;
-        border: none;
-      }
-      button:focus{
-        outline:none;
-      }
-      button:hover{
-        background-color: rgb(177, 187, 218);
-      }
+      // input {
+        // margin-bottom: 16px;
+      // }
     }
   }
   
