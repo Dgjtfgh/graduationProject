@@ -7,7 +7,9 @@ let servicePath = {
     addAccount: Url + 'addAccount',
     getUserInfo: Url + 'getUserInfo',
     updateUserInfo: Url + 'updateUserInfo',
-    getCourseInfo: Url + 'getCourseInfo'
+    getCourseInfo: Url + 'getCourseInfo',
+    saveTestPaper: Url + 'saveTestPaper',
+    getQuestionList: Url + 'getQuestionList',
 }
 
 export default servicePath;

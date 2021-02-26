@@ -18,7 +18,7 @@
           </el-submenu>
           <el-submenu v-if="this.sf=='老师'" index="3">
             <template slot="title">试卷管理</template>
-            <el-menu-item index="/selectpapersub">出试卷</el-menu-item>
+            <el-menu-item index="/makepaper">出试卷</el-menu-item>
             <el-menu-item index="/mangerpaper">未考试卷</el-menu-item>
           </el-submenu>
           <el-menu-item v-if="this.sf=='学生'" index="/achievement">成绩查询</el-menu-item>

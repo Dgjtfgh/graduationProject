@@ -74,17 +74,9 @@ let router = new Router({
               }
             },
             {
-              path: 'selectpapersub',
-              name: 'SelectPapersub',
-              component: () => import('@/components/MakePaper/index'),
-              meta: {
-                requireAuth: true, role: '老师'
-              }
-            },
-            {
               path: 'makepaper',
               name: 'MakePaper',
-              component: () => import('@/components/MakePaper/makepaper'),
+              component: () => import('@/components/MakePaper/index'),
               meta: {
                 requireAuth: true, role: '老师'
               }
