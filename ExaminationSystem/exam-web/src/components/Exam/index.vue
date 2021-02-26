@@ -6,13 +6,13 @@
           <el-button class="course-item"
             size="mini"
             v-for="(item, index) in course" :key="index"
-            @click="selectCourse(item)">
-            {{ item }}
+            @click="selectCourse(item.subjectName)">
+            {{ item.subjectName }}
           </el-button>
         </div>
         <div class="paper">
           <el-table
-            :data="tableData"
+            :data="textPaperData"
             style="width: 100%; height: 100%"
             max-height="450"
             @row-dblclick="enterPaper"
@@ -52,6 +52,8 @@
   </div>
 </template>
 <script>
+import axios from "axios"
+import servicePath from "@/config/ApiUrl"
 export default {
     data() {
       return {
@@ -61,7 +63,7 @@ export default {
           "高数", '英语', 'C++', 'Java',
           "高数", '英语', 'C++', 'Java',
         ],
-        tableData: [
+        textPaperData: [
           {
             id: 1,
             name: 'C++综合测试卷A',
@@ -163,7 +165,22 @@ export default {
         ]
       }
     },
+    created() {
+      this.getCourseInfo();
+    },
     methods: {
+      getCourseInfo() {
+        axios({
+          method: 'GET',
+          url: servicePath.getCourseInfo,
+          withCredentials: true
+        }).then(res => {
+          console.log(res);
+          if(res.status == '200') {
+            this.course = res.data.data;
+          }
+        })
+      },
       selectCourse(value) {
         console.log(value);
       },

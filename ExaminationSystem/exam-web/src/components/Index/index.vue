@@ -13,54 +13,223 @@
         <div class="content content1-right">
           <div class="info">
             <p>个人信息</p>
-            <div><label for="">姓名：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="name"/></div>
-            <div><label for="">学号：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="no" /></div>  
-            <div><label for="">学院：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="college" /></div>  
-            <div><label for="">专业：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="professional" /></div>
-            <div><label for="">性别：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="sex" /></div>
-            <div><label for="">身份：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="sf" /></div>  
-            <div>
+            <div><label for="">姓名：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="ruleForm.name"/></div>
+            <div><label for="">学号：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="ruleForm.number" /></div> 
+            <div><label for="">身份：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="ruleForm.sf" /></div> 
+            <div><label for="">学院：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="ruleForm.college" /></div>  
+            <div><label for="">专业：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="ruleForm.major" /></div>
+            <div><label for="">性别：</label><input :class="changeInfo?'inputdis':'inputabled'" type="text" v-model="ruleForm.sex" /></div>
+            <div v-if="this.ruleForm.sf != '管理员'">
               <button @click="changeUserInfo">{{this.changeButton}}</button>
             </div>
           </div>
-          <div class="pass">
+          <!-- <div class="pass">
             <div><label for="">原密码：</label><input type="text" v-model="oldPassword" /></div>
             <div><label for="">新密码：</label><input type="text" v-model="newPassword" /></div>
             <div><label for="">验密码：</label><input type="text" v-model="checkNewPass" /></div>
             <div><button>修改密码</button></div>
-          </div>
+          </div> -->
         </div>
       <!-- </el-col> -->
     </div>
+    <el-dialog class="changepassdialog" 
+      title="密码修改" 
+      :visible.sync="dialogFormVisible"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+    >
+      <p v-if="this.isFristLogin" style="margin: 5px; color: red;">为了账号安全请修改初始密码并完善信息！</p>
+      <div class="form">
+          <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+            <!-- <el-form-item label="用户名" prop="username">
+                <el-input v-model="ruleForm.username"></el-input>
+            </el-form-item> -->
+            <el-form-item label="姓名" prop="name">
+                <el-input v-model="ruleForm.name"></el-input>
+            </el-form-item>
+            <el-form-item label="是否修改密码">
+                <el-button style="width: 80px;" size="mini" round @click="isChangePass">{{this.text}}</el-button>
+            </el-form-item>
+            <el-form-item v-if="this.ruleForm.changePass" label="新密码" prop="newPassword">
+                <el-input type="password" v-model="ruleForm.newPassword" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item v-if="this.ruleForm.changePass" label="确认密码" prop="checkNewPass">
+                <el-input type="password" v-model="ruleForm.checkNewPass" autocomplete="off"></el-input>
+            </el-form-item>
+            <!-- <el-form-item label="身份" prop="sf">
+                <el-radio-group v-model="ruleForm.sf">
+                    <el-radio label="老师"></el-radio>
+                    <el-radio label="学生"></el-radio>
+                </el-radio-group>
+            </el-form-item> -->
+            <el-form-item label="性别" prop="sex">
+                <el-input v-model="ruleForm.sex"></el-input>
+            </el-form-item>
+            <el-form-item label="学院" prop="college">
+                <el-input v-model="ruleForm.college"></el-input>
+            </el-form-item>
+            <el-form-item label="专业" prop="major">
+                <el-input v-model="ruleForm.major"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="submitForm('ruleForm')">确 定</el-button>
+                <el-button v-if="!this.isFristLogin" @click="dialogFormVisible = false">返 回</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      <!-- <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="changeInfo">确 定</el-button>
+      </div> -->
+    </el-dialog>
   </div>
 </template>
 <script>
+import axios from "axios"
+import servicePath from "@/config/ApiUrl"
 export default {
     data () {
+      var validatePass = (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('请输入密码'));
+        } else {
+          if (this.ruleForm.checkNewPass !== '') {
+            this.$refs.ruleForm.validateField('checkNewPass');
+          }
+          callback();
+        }
+      };
+      var validatePass2 = (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('请再次输入密码'));
+        } else if (value !== this.ruleForm.newPassword) {
+          callback(new Error('两次输入密码不一致!'));
+        } else {
+          callback();
+        };
+      };
       return {
-        name: '肖文凯',
-        no: '201720181819',
-        college: '软件学院',
-        professional: '软件工程',
-        sex: '男',
-        sf: '学生',
-        oldPassword: '',
-        newPassword: '',
-        checkNewPass: '',
+        text: '否',
+        dialogFormVisible: false,
+        ruleForm: {
+          changePass: false,
+          sf: '',
+          password: '',
+          number: '',
+          name: '',
+          sex: '',
+          newPassword: '',
+          checkNewPass: '',
+          college: '',
+          major:''
+        },
+        rules: {
+          newPassword: [
+            { required: true, validator: validatePass, trigger: 'blur' }
+          ],
+          checkNewPass: [
+            { required: true, validator: validatePass2, trigger: 'blur' }
+          ],
+          name: [
+            { required: true, message: '填写姓名', trigger: 'blur' }
+          ]
+        },
+        // name: '肖文凯',
+        // no: '201720181819',
+        // college: '软件学院',
+        // professional: '软件工程',
+        // sex: '男',
+        // sf: '学生',
+        isFristLogin: false,
+        // oldPassword: '',
+        // newPassword: '',
+        // checkNewPass: '',
         changeButton: '修改信息',
         changeInfo: false,
       }
     },
+    created() {
+      this.getUserInfo();
+    },
+    mounted() {
+      // if(this.isFristLogin) {
+      //   this.changeUserInfo();
+      // }
+    },
     methods: {
+      isChangePass() {
+        this.ruleForm.changePass = !this.ruleForm.changePass;
+        if(this.ruleForm.changePass) {
+          this.text = '是';
+        } else{ this.text = '否'; }
+      },
+      getUserInfo() {
+        // console.log(this.$route.params);
+        // const number = this.$route.params.number;
+        const number = localStorage.getItem("username");
+        const sf = localStorage.getItem("sf");
+        console.log(sf);
+        axios({
+          method: 'GET',
+          url: servicePath.getUserInfo,
+          params: {
+            number: number,
+            sf: sf
+          },
+          withCredentials: true
+        }).then(res => {
+          // console.log(res);
+          this.ruleForm.name = res.data.data[0].name;
+          this.ruleForm.number = res.data.data[0].number;
+          this.ruleForm.college = res.data.data[0].college
+          this.ruleForm.major = res.data.data[0].major
+          this.ruleForm.sex = res.data.data[0].sex;
+          this.ruleForm.sf = res.data.data[0].sf;
+          // this.password = res.data.data[0].password;
+          if(res.data.data[0].number == res.data.data[0].password) {
+            this.isFristLogin = true;
+            this.ruleForm.changePass = true;
+            this.changeUserInfo();
+          }
+        })
+      },
+      submitForm() {
+        axios({
+           method: 'POST',
+           url: servicePath.updateUserInfo,
+           data: this.ruleForm,
+           withCredentials: true
+        }).then(res => {
+          // console.log(res);
+          if(res.data.isScuccess) {
+            if(this.ruleForm.changePass){
+              localStorage.clear();
+              this.$message({
+                type: 'warning',
+                message: '登录失效，请重新登录!'
+              });
+              // this.$router.push({name:'Login'});
+            } else {
+              this.$message({
+                type: 'success',
+                message: '信息修改成功!'
+              });
+              this.dialogFormVisible = false;
+            }
+          }
+        })
+      },
       changeUserInfo() {
-        console.log(this.changeInfo);
-        if(this.changeInfo) {
-          // 发送请求
-          this.changeButton = '修改信息';
-        } else {
-          this.changeButton = '确认';
-        }
-        this.changeInfo = !this.changeInfo;
+        this.dialogFormVisible = true;
+      //   console.log(this.changeInfo);
+      //   if(this.changeInfo) {
+      //     // 发送请求
+      //     this.changeButton = '修改信息';
+      //   } else {
+      //     this.changeButton = '确认';
+      //   }
+      //   this.changeInfo = !this.changeInfo;
       }
     }
 }
@@ -147,6 +316,14 @@ export default {
       // input {
         // margin-bottom: 16px;
       // }
+    }
+  }
+  .changepassdialog{
+    .el-dialog__body{
+      padding: 0 !important;
+    }
+    .el-form-item{
+      margin-bottom: 20px !important;
     }
   }
   

@@ -14,13 +14,14 @@
             </el-form-item>
             <el-form-item label="身份" prop="sf">
                 <el-radio-group v-model="ruleForm.sf">
-                    <el-radio label="老师"></el-radio>
-                    <el-radio label="学生"></el-radio>
+                  <el-radio label="管理员"></el-radio>
+                  <el-radio label="老师"></el-radio>
+                  <el-radio label="学生"></el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
-                <el-button @click="jumpRegister()">注册</el-button>
+                <!-- <el-button @click="jumpRegister()">注册</el-button> -->
             </el-form-item>
           </el-form>
         </div>
@@ -28,19 +29,11 @@
     <!-- </div> -->
 </template>
 <script>
+import axios from "axios"
+import servicePath from "@/config/ApiUrl"
 export default {
   name: 'Login',
     data() {
-    //   var checkUserName = (rule, value, callback) => {
-    //     if (!value) {
-    //       return callback(new Error('用户名不能为空'));
-    //     }
-    //   };
-    //   var validatePassWord = (rule, value, callback) => {
-    //     if (value === '') {
-    //       callback(new Error('请输入密码'));
-    //     } 
-    //   };
       return {
         ruleForm: {
           sf: '',
@@ -64,20 +57,39 @@ export default {
       submitForm (formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            console.log(this.ruleForm);
-            localStorage.setItem("username", this.ruleForm.username);
-            localStorage.setItem("sf", this.ruleForm.sf);
-            this.$router.push({name:'Index'});
-            // alert('submit!');
+            // console.log(this.ruleForm);
+            axios({
+              method: 'POST',
+              url: servicePath.checkLogin,
+              data: this.ruleForm,
+              withCredentials: true
+            }).then(res => {
+              if (res.data.data == '登录成功') {
+                localStorage.setItem("username", this.ruleForm.username);
+                localStorage.setItem("sf", this.ruleForm.sf);
+                this.$router.push({
+                  name:'Index',
+                  params: {
+                    number: res.data.username
+                  }
+                });
+              } else {
+                this.$message.error({
+                  duration: 2000,
+                  message: '用户名密码或身份错误！'
+                });
+              }
+            })
           } else {
+            this.$message.error("登录失败！");
             console.log('error submit!!');
             return false
           }
         })
       },
-      jumpRegister () {
-        this.$router.push({name:'Register'});
-      }
+      // jumpRegister () {
+      //   this.$router.push({name:'Register'});
+      // }
     }
 }
 </script>

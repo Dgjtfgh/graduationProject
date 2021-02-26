@@ -20,7 +20,26 @@ let router = new Router({
             {
               path: '/',
               name: 'Index',
-              component: () => import('@/components/Index/index')
+              component: () => import('@/components/Index/index'),
+              meta: {
+                requireAuth: true
+              }
+            },
+            {
+              path: 'accountlist',
+              name: 'AccountList',
+              component: () => import('@/components/AccountList/index'),
+              meta: {
+                requireAuth: true, role: '管理员'
+              }
+            },
+            {
+              path: 'addaccount',
+              name: 'AddAccount',
+              component: () => import('@/components/AddAccount/index'),
+              meta: {
+                requireAuth: true, role: '管理员'
+              }
             },
             {
               path: 'exam',
@@ -55,9 +74,17 @@ let router = new Router({
               }
             },
             {
+              path: 'selectpapersub',
+              name: 'SelectPapersub',
+              component: () => import('@/components/MakePaper/index'),
+              meta: {
+                requireAuth: true, role: '老师'
+              }
+            },
+            {
               path: 'makepaper',
               name: 'MakePaper',
-              component: () => import('@/components/MakePaper/index'),
+              component: () => import('@/components/MakePaper/makepaper'),
               meta: {
                 requireAuth: true, role: '老师'
               }
@@ -103,13 +130,16 @@ let router = new Router({
 router.beforeEach((to, from, next) => {
   if (to.meta.requireAuth) { // 判断该路由是否需要登录权限
     if (localStorage.getItem('username')) { // 通过vuex state获取当前的token是否存在
-      if(localStorage.getItem('sf') == to.meta.role) {
-        next();
-      } else {
-        next({
-          path: '/404'
-        })
+      if(to.meta.role) {
+        if(localStorage.getItem('sf') == to.meta.role) {
+          next();
+        } else {
+          next({
+            path: '/404'
+          })
+        }
       }
+      next();
     } else {
       next({
         path: '/login',
