@@ -13,8 +13,8 @@
         </el-option>
     </el-select></div>
       <div class="item"><label for="">试卷名称：</label><el-input placeholder="输入试卷名称" class="paper-name" type="text" v-model="testPaperData.name"></el-input></div>
-      <div class="item"><label for="">开考时间：</label><el-input type="datetime-local" v-model="testPaperData.startdata"></el-input></div>
-      <div class="item"><label for="">结束时间：</label><el-input type="datetime-local" v-model="testPaperData.enddata"></el-input></div>
+      <div class="item"><label for="">开考时间：</label><el-input type="datetime-local" v-model="testPaperData.startdate"></el-input></div>
+      <div class="item"><label for="">结束时间：</label><el-input type="datetime-local" v-model="testPaperData.enddate"></el-input></div>
       <div class="item"><label for="">考试时长：</label><el-select v-model="testPaperData.testtimes" placeholder="请选择考试时长">
         <el-option
         v-for="item in testTimesList"
@@ -139,8 +139,8 @@ export default {
             testPaperData: {
                 name: '',
                 subject: '',
-                startdata: '',
-                enddata: '',
+                startdate: '',
+                enddate: '',
                 writer: '',
                 questions: '',
                 testtimes: ''
@@ -168,8 +168,22 @@ export default {
     created() {
         this.getCourseInfo();
         this.getQuestionList();
+        if(this.$route.params.id) {
+            console.log(this.$route.params);
+            this.getTestPaperInfo();
+        }
     },
     methods: {
+        init() {
+            // (?<=@).*?(?=#) 
+            // (?<=#).*?(?=$)
+            let chiocequestions = this.testPaperData.questions.match(/(?<=@).*?(?=#)/);
+            console.log(chiocequestions);
+            let gapfilling = this.testPaperData.questions.match(/(?<=#).*?(?=$)/);
+            console.log(gapfilling);
+            let shortanswerquestions = this.testPaperData.questions.match(/(?<=$).*?/);
+            console.log(shortanswerquestions);
+        },
         toggleSelection(rows) {
             if (rows) {
             rows.forEach(row => {
@@ -178,6 +192,20 @@ export default {
             } else {
             this.$refs.multipleTable.clearSelection();
             }
+        },
+        getTestPaperInfo() {
+            axios({
+                method: 'GET',
+                url: servicePath.getTestPaperInfo,
+                params: {paperId: this.$route.params.id},
+                withCredentials: true
+            }).then(res => {
+                console.log(res);
+                if(res.status == '200') {
+                    this.testPaperData = res.data.data[0];
+                    this.init();
+                }
+            })
         },
         getQuestionList() {
             axios({
@@ -216,11 +244,11 @@ export default {
                 this.$message.error("试卷名不能为空！");
                 return 0;
             }
-            if(!this.testPaperData.startdata){
+            if(!this.testPaperData.startdate){
                 this.$message.error("请设置开考时间！");
                 return 0;
             }
-            if(!this.testPaperData.enddata){
+            if(!this.testPaperData.enddate){
                 this.$message.error("请设置最后考试时间！");
                 return 0;
             }

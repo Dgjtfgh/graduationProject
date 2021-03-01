@@ -10,6 +10,9 @@ let servicePath = {
     getCourseInfo: Url + 'getCourseInfo',
     saveTestPaper: Url + 'saveTestPaper',
     getQuestionList: Url + 'getQuestionList',
+    getTestPaperList: Url + 'getTestPaperList',
+    deleteTestPaper: Url + 'deleteTestPaper',
+    getTestPaperInfo: Url + 'getTestPaperInfo'
 }
 
 export default servicePath;

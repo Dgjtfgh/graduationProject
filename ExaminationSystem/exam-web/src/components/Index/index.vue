@@ -48,7 +48,7 @@
             <el-form-item label="姓名" prop="name">
                 <el-input v-model="ruleForm.name"></el-input>
             </el-form-item>
-            <el-form-item label="是否修改密码">
+            <el-form-item v-if="!this.isFristLogin" label="是否修改密码">
                 <el-button style="width: 80px;" size="mini" round @click="isChangePass">{{this.text}}</el-button>
             </el-form-item>
             <el-form-item v-if="this.ruleForm.changePass" label="新密码" prop="newPassword">
@@ -209,7 +209,7 @@ export default {
                 type: 'warning',
                 message: '登录失效，请重新登录!'
               });
-              // this.$router.push({name:'Login'});
+              this.$router.push({name:'Login'});
             } else {
               this.$message({
                 type: 'success',
