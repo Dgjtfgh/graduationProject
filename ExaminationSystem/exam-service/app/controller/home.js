@@ -131,10 +131,27 @@ class HomeController extends Controller {
 
   async saveTestPaper() {
     const { ctx } = this;
-    // console.log(ctx.request.body, '+++++++++');
-    const result = await this.app.mysql.insert('testpapertable', ctx.request.body)
-    const insertSuccess = result.affectedRows === 1;
-    const insertId = result.insertId;
+    console.log(ctx.request.body, '+++++++++');
+    let result;
+    let insertSuccess, insertId;
+    if(ctx.request.body.paperId) {
+      const options = {  where: {paperId: ctx.request.body.paperId}};
+      const data = {
+        name: ctx.request.body.name,
+        subject: ctx.request.body.subject,
+        startdate: new Date(ctx.request.body.startdate),
+        enddate: new Date(ctx.request.body.enddate),
+        questions: ctx.request.body.questions,
+        testtimes: ctx.request.body.testtimes
+      }
+      result = await this.app.mysql.update('testpapertable', data, options);
+      insertSuccess = result.affectedRows === 1;
+    } else {
+      result = await this.app.mysql.insert('testpapertable', ctx.request.body)
+      insertSuccess = result.affectedRows === 1;
+      insertId = result.insertId;
+    }
+    
     this.ctx.body = {
       isScuccess: insertSuccess,
       insertId,
@@ -189,13 +206,13 @@ class HomeController extends Controller {
 
   async getTestPaperInfo() {
     const { ctx } = this;
-    console.log(ctx.request.query, '+++++++++');
+    // console.log(ctx.request.query, '+++++++++');
     const result = await this.app.mysql.select('testpapertable', {
       where: {
         paperId: ctx.request.query.paperId
       }
     })
-    console.log(result)
+    // console.log(result)
     this.ctx.body = {
       data: result
     }

@@ -47,7 +47,7 @@ module.exports = appInfo => {
         // username
         user: 'root',
         // password
-        password: 'root',
+        password: '123456',
         // database
         database: 'examdatabases',
     },
