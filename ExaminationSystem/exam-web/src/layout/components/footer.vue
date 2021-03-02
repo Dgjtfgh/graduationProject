@@ -17,5 +17,6 @@ export default {
         font: .8em sans-serif;
         line-height: 30px;
         vertical-align: middle;
+        z-index: 999;
     }
 </style>

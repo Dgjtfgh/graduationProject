@@ -13,8 +13,8 @@
         </el-option>
     </el-select></div>
       <div class="item"><label for="">试卷名称：</label><el-input placeholder="输入试卷名称" class="paper-name" type="text" v-model="testPaperData.name"></el-input></div>
-      <div class="item"><label for="">开考时间：</label><el-input type="datetime-local" v-model="testPaperData.startdate"></el-input></div>
-      <div class="item"><label for="">结束时间：</label><el-input type="datetime-local" v-model="testPaperData.enddate"></el-input></div>
+      <div class="item"><label for="">开考时间：</label><el-input type="datetime-local" v-model="starttime"></el-input></div>
+      <div class="item"><label for="">结束时间：</label><el-input type="datetime-local" v-model="endtime"></el-input></div>
       <div class="item"><label for="">考试时长：</label><el-select v-model="testPaperData.testtimes" placeholder="请选择考试时长">
         <el-option
         v-for="item in testTimesList"
@@ -126,6 +126,7 @@
 <script>
 import axios from "axios"
 import servicePath from "@/config/ApiUrl"
+import moment from "moment"
 export default {
     name: 'MakePaper',
     data() {
@@ -140,14 +141,15 @@ export default {
                 name: '',
                 subject: '',
                 startdate: '',
-                enddate: '',
+                enddate: '2021-2-13T12:12',
                 writer: '',
                 questions: '',
                 testtimes: ''
             },
             totalscore: 0,
             paperQuestionsList: [],
-            questionsData: []
+            questionsData: [],
+            questionIdArr: []
         }
     },
     computed: {
@@ -163,49 +165,82 @@ export default {
         },
         shortAnswerQuestions: function () {
             return this.paperQuestionsList.filter(function(item){ return item.type=="简答题"; });
+        },
+        starttime: {
+            get: function () {
+                let temp = moment(this.testPaperData.startdate).format("YYYY-MM-DDTHH:mm:ss");
+                return temp;
+            },
+            set: function (value) {
+                this.testPaperData.startdate = value;
+            }
+        },
+        endtime: {
+            get: function () {
+                let temp = moment(this.testPaperData.enddate).format("YYYY-MM-DDTHH:mm:ss");
+                return temp;
+            },
+            set: function (value) {
+                this.testPaperData.enddate = value;
+            }
         }
     },
     created() {
-        this.getCourseInfo();
-        this.getQuestionList();
-        if(this.$route.params.id) {
-            console.log(this.$route.params);
-            this.getTestPaperInfo();
-        }
+        this.init();
     },
     methods: {
-        init() {
+        async init() {
+            await this.getCourseInfo();
+            await this.getQuestionList();
+        },
+        initPage() {
             // (?<=@).*?(?=#) 
             // (?<=#).*?(?=$)
-            let chiocequestions = this.testPaperData.questions.match(/(?<=@).*?(?=#)/);
-            console.log(chiocequestions);
-            let gapfilling = this.testPaperData.questions.match(/(?<=#).*?(?=$)/);
-            console.log(gapfilling);
-            let shortanswerquestions = this.testPaperData.questions.match(/(?<=$).*?/);
-            console.log(shortanswerquestions);
+            let chiocequestions = this.testPaperData.questions.match(/(?<=@).*?(?=@)/);
+            // console.log(chiocequestions);
+            let gapfilling = this.testPaperData.questions.match(/(?<=#).*?(?=\#)/);
+            // console.log(gapfilling);
+            let shortanswerquestions = this.testPaperData.questions.match(/(?<=\$).*?(?=\$)/);
+            // console.log(shortanswerquestions);
+            let questions = chiocequestions + ',' + gapfilling + ',' + shortanswerquestions;
+            // console.log(questions);
+            this.questionIdArr = questions.split(',');
+            // console.log(this.questionIdArr);
+            this.$nextTick(()=>{
+                this.questionsData.map(row => {
+                    // console.log(row);
+                    if(this.questionIdArr.indexOf(''+row.questionId) >= 0){
+                        // console.log(row, '+++++++');
+                        this.$refs.multipleTable.toggleRowSelection(row,true);
+                    }
+                })
+            })
         },
         toggleSelection(rows) {
             if (rows) {
-            rows.forEach(row => {
-                this.$refs.multipleTable.toggleRowSelection(row);
-            });
+                rows.forEach(row => {
+                    this.$refs.multipleTable.toggleRowSelection(row);
+                });
             } else {
-            this.$refs.multipleTable.clearSelection();
+                this.$refs.multipleTable.clearSelection();
             }
         },
         getTestPaperInfo() {
-            axios({
-                method: 'GET',
-                url: servicePath.getTestPaperInfo,
-                params: {paperId: this.$route.params.id},
-                withCredentials: true
-            }).then(res => {
-                console.log(res);
-                if(res.status == '200') {
-                    this.testPaperData = res.data.data[0];
-                    this.init();
-                }
-            })
+            // return new Promise((resolve) => {
+                axios({
+                    method: 'GET',
+                    url: servicePath.getTestPaperInfo,
+                    params: {paperId: this.$route.params.id},
+                    withCredentials: true
+                }).then(res => {
+                    // console.log(res);
+                    if(res.status == '200') {
+                        this.testPaperData = res.data.data[0];
+                        this.initPage();
+                    }
+                })
+            // })
+            
         },
         getQuestionList() {
             axios({
@@ -217,6 +252,10 @@ export default {
                 // console.log(res);
                 if(res.status == '200') {
                     this.questionsData = res.data.data;
+                    if(this.$route.params.id) {
+                        // console.log(this.$route.params);
+                        this.getTestPaperInfo();
+                    }
                 }
             })
         },
@@ -264,36 +303,57 @@ export default {
         },
         save() {
             let questionString = '';
-            // let totalscore = 0;
-            console.log(this.choiceQuestions);
+            // console.log(this.choiceQuestions);
             if(this.choiceQuestions) {
                 questionString += '@';
                 for (let i=0; i<this.choiceQuestions.length; i++){
                     // console.log(i,arr[i]);
-                    questionString += this.choiceQuestions[i].questionId + ',';
-                    this.totalscore += this.choiceQuestions[i].score;
+                    if(i == this.choiceQuestions.length-1) {
+                        questionString += this.choiceQuestions[i].questionId;
+                        this.totalscore += this.choiceQuestions[i].score;
+                    } else {
+                        questionString += this.choiceQuestions[i].questionId + ',';
+                        this.totalscore += this.choiceQuestions[i].score;
+                    }
                 }
+                questionString += '@';
             }
             if(this.gapFillQuestions) {
                 questionString += '#';
                 for (let i=0; i<this.gapFillQuestions.length; i++){
                     // console.log(i,arr[i]);
-                    questionString += this.gapFillQuestions[i].questionId + ',';
-                    this.totalscore += this.gapFillQuestions[i].score;
+                    if(i == this.gapFillQuestions.length-1) {
+                        questionString += this.gapFillQuestions[i].questionId;
+                        this.totalscore += this.gapFillQuestions[i].score;
+                    } else {
+                        questionString += this.gapFillQuestions[i].questionId + ',';
+                        this.totalscore += this.gapFillQuestions[i].score;
+                    }
                 }
+                questionString += '#';
             }
             if(this.shortAnswerQuestions) {
                 questionString += '$';
                 for (let i=0; i<this.shortAnswerQuestions.length; i++){
                     // console.log(i,arr[i]);
-                    questionString += this.shortAnswerQuestions[i].questionId + ',';
-                    this.totalscore += this.shortAnswerQuestions[i].score;
+                    if(i == this.shortAnswerQuestions.length-1) {
+                        questionString += this.shortAnswerQuestions[i].questionId;
+                        this.totalscore += this.shortAnswerQuestions[i].score;
+                    } else {
+                        questionString += this.shortAnswerQuestions[i].questionId + ',';
+                        this.totalscore += this.shortAnswerQuestions[i].score;
+                    }
                 }
+                questionString += '$';
             }
             this.testPaperData.questions = questionString;
             this.testPaperData.writer = localStorage.getItem('username');
             console.log(this.totalscore, '++++++++')
             if (this.checkData()){
+                if(this.$route.params.id) {
+                    this.testPaperData.paperId = this.$route.params.id;
+                }
+                this.totalscore = 0;
                 axios({
                     method: 'POST',
                     url: servicePath.saveTestPaper,
@@ -320,6 +380,8 @@ export default {
                         this.$message.error("上传失败！");
                     }
                 })
+            } else {
+                this.totalscore = 0;
             }
             
         },
@@ -352,11 +414,11 @@ export default {
             vertical-align: middle;
         }
         .el-select {
-            width: 150px;
+            width: 100px;
             height: 30px;
         }
         .el-input{
-            width: 200px;
+            width: 180px;
             height: 30px;
         }
     }
