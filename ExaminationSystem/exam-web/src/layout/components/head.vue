@@ -7,24 +7,24 @@
     </div>
     <div class="nav">
         <el-menu :default-active="activeIndex"
-        class="el-menu-demo" mode="horizontal" router
+        class="el-menu-demo" mode="horizontal" 
         active-text-color="#000" background-color="#B3C0D1"
         @select="handleSelect">
           <el-menu-item index="/">首页</el-menu-item>
           <el-submenu v-if="this.sf=='学生'" index="2">
             <template slot="title">在线考试</template>
-            <el-menu-item index="/practice">自主练习</el-menu-item>
-            <el-menu-item index="/exam">课程考试</el-menu-item>
+            <el-menu-item index="practice">自主练习</el-menu-item>
+            <el-menu-item index="exam">课程考试</el-menu-item>
           </el-submenu>
           <el-submenu v-if="this.sf=='老师'" index="3">
             <template slot="title">试卷管理</template>
-            <el-menu-item index="/makepaper">出试卷</el-menu-item>
-            <el-menu-item index="/mangerpaper">未考试卷</el-menu-item>
+            <el-menu-item index="makepaper">出试卷</el-menu-item>
+            <el-menu-item index="mangerpaper">未考试卷</el-menu-item>
           </el-submenu>
-          <el-menu-item v-if="this.sf=='学生'" index="/achievement">成绩查询</el-menu-item>
-          <el-menu-item v-if="this.sf=='老师'" index="/correctpaper">批改试卷</el-menu-item>
-          <el-menu-item v-if="this.sf=='管理员'" index="/accountlist">账户列表</el-menu-item>
-          <el-menu-item v-if="this.sf=='管理员'" index="/addaccount">添加账户</el-menu-item>
+          <el-menu-item v-if="this.sf=='学生'" index="achievement">成绩查询</el-menu-item>
+          <el-menu-item v-if="this.sf=='老师'" index="correctpaper">批改试卷</el-menu-item>
+          <el-menu-item v-if="this.sf=='管理员'" index="accountlist">账户列表</el-menu-item>
+          <el-menu-item v-if="this.sf=='管理员'" index="addaccount">添加账户</el-menu-item>
         </el-menu>
     </div>
     <div class="operate">
@@ -77,6 +77,7 @@ export default {
       },
     handleSelect (key, keyPath) {
       // console.log(key, keyPath);
+      this.$router.push({path: key});
     },
     // jumpInfo() {
     //   this.$router.push({name:'Login'});

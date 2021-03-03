@@ -57,14 +57,14 @@ let router = new Router({
                 requireAuth: true, role: '学生'
               }
             },
-            {
-              path: 'exampaper',
-              name: 'ExamPaper',
-              component: () => import('@/components/ExamPaper/index'),
-              meta: {
-                requireAuth: true, role: '学生'
-              }
-            },
+            // {
+            //   path: 'exampaper',
+            //   name: 'ExamPaper',
+            //   component: () => import('@/components/ExamPaper/index'),
+            //   meta: {
+            //     requireAuth: true, role: '学生'
+            //   }
+            // },
             {
               path: 'achievement',
               name: 'Achievement',
@@ -100,6 +100,14 @@ let router = new Router({
           // ]
         // }
       ]
+    },
+    {
+      path: '/exampaper',
+      name: 'ExamPaper',
+      component: () => import('@/components/ExamPaper/index'),
+      meta: {
+        requireAuth: true, role: '学生'
+      }
     },
     {
       path: '/login',

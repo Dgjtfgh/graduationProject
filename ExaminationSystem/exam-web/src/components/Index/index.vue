@@ -169,7 +169,7 @@ export default {
         // const number = this.$route.params.number;
         const number = localStorage.getItem("username");
         const sf = localStorage.getItem("sf");
-        console.log(sf);
+        // console.log(sf);
         axios({
           method: 'GET',
           url: servicePath.getUserInfo,

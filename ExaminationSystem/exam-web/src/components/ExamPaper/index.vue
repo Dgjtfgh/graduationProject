@@ -1,11 +1,11 @@
 <template>
   <div id="exampaper">
     <div class="desc">
-      <div><label for="">考试科目：</label><input type="text" v-model="course"/></div>
-      <div><label for="">试卷ID：</label><input type="text" v-model="id"/></div>
-      <div><label for="">试卷名称：</label><input class="paper-name" type="text" v-model="paperName"/></div>
-      <div><label for="">题目数量：</label><input type="text" v-model="amount"/></div>
-      <div><label for="">考试时长：</label><input :class="{ time:true, remain: timeFlag }" type="text" v-model="remainTime"/></div>
+      <div><label for="">考试科目：</label><input style="width:100px;" type="text" v-model="course"/></div>
+      <div><label for="">试卷ID：</label><input style="width:40px;" type="text" v-model="id"/></div>
+      <div><label for="">试卷名称：</label><input style="width:180px;" class="paper-name" type="text" v-model="paperName"/></div>
+      <div><label for="">题目数量：</label><input style="width:40px;" type="text" v-model="amount"/></div>
+      <div><label for="">考试时长：</label><input style="width:60px;" :class="{ time:true, remain: this.timeFlag }" type="text" v-model="remainTime"/></div>
     </div>
     <div class="container">
       <div class="left">
@@ -29,13 +29,13 @@
           <el-button size="small" @click="back">返回</el-button>
         </div>
         <div class="questions" v-else>
-          <QuestionView v-bind:ques="questionItem" />
+          <QuestionView v-bind:ques="questionItem" ref="mychild" v-on:changeanswer="changeanswer" />
           <div class="operate">
             <el-pagination
               background
               @current-change="handleCurrentChange"
               layout="prev, pager, next"
-              :page-count="50">
+              :page-count="amount">
             </el-pagination>
             <el-button size="small" @click="submitAnswer">提交试卷</el-button>
           </div>
@@ -46,6 +46,8 @@
 </template>
 <script>
 import QuestionView from "./questions"
+import axios from "axios"
+import servicePath from "@/config/ApiUrl"
 export default {
   components: {
     QuestionView
@@ -64,28 +66,15 @@ export default {
       studentNo: '201720181819',
       college: '软件学院',
       professional: '软件工程',
-      remainingTime: 30,
+      remainingTime: 300000,
       timerFlag: null,
-      questionItem: {
-          type: '1', // 选择题
-          id: '1',
-          question: '我们只看到了以字符串数组形式列出的 prop：',
-          answer: '',
-        },
-      questionsList: [
-        {
-          type: '1', // 选择题
-          id: '1',
-          question: '我们只看到了以字符串数组形式列出的 prop：',
-          answer: '',
-        },
-        {
-          type: '2', // 简答题
-          id: '2',
-          question: '',
-          answer: '',
-        }
-      ]
+      questionString: '',
+      questionIdArr: [],
+      questionItem: {},
+      answerList: {},
+      answer: '',
+      isChange: false,
+      isFirstSave: true
     }
   },
   watch: {
@@ -93,7 +82,7 @@ export default {
       if(newQuestion === 0) {
         this.submitAnswer();
       }
-      if(newQuestion = 20) {
+      if(newQuestion <= 60*5) {
         this.timeFlag = true;
       }
     }
@@ -104,13 +93,113 @@ export default {
     }
   },
   created() {
-    // console.log(this.course, this.remainingTime, '-------')
-    
+    // console.log(this.$route.params.id);
+    this.getTestPaperInfo();
+    this.getUserInfo();
   },
   methods: {
+    changeanswer(value) {
+      console.log(value);
+      this.isChange = true;
+      // this.answerList[this.questionItem.questionId] = value;
+      this.answer = value;
+      // console.log(this.answerList);
+    },
+    initPage() {
+            // (?<=@).*?(?=#)
+            let chiocequestions = this.questionString.match(/(?<=@).*?(?=@)/);
+            // console.log(chiocequestions);
+            let gapfilling = this.questionString.match(/(?<=#).*?(?=\#)/);
+            // console.log(gapfilling);
+            let shortanswerquestions = this.questionString.match(/(?<=\$).*?(?=\$)/);
+            // console.log(shortanswerquestions);
+            let questions = chiocequestions + ',' + gapfilling + ',' + shortanswerquestions;
+            // console.log(questions);
+            this.questionIdArr = questions.split(',');
+            // console.log(this.questionIdArr);
+            this.amount = this.questionIdArr.length;
+        },
+    getUserInfo() {
+        const number = localStorage.getItem("username");
+        const sf = localStorage.getItem("sf");
+        axios({
+          method: 'GET',
+          url: servicePath.getUserInfo,
+          params: {
+            number: number,
+            sf: sf
+          },
+          withCredentials: true
+        }).then(res => {
+          // console.log(res);
+          this.studentName = res.data.data[0].name;
+          this.studentNo = res.data.data[0].number;
+          this.college = res.data.data[0].college;
+          this.professional = res.data.data[0].major;
+        })
+      },
+    getTestPaperInfo() {
+      this.id = this.$route.params.id,
+      axios({
+        method: 'GET',
+        url: servicePath.getTestPaperInfo,
+        params: {paperId: this.id},
+        withCredentials: true
+      }).then(res => {
+        // console.log(res);
+        if(res.status == '200') {
+          this.course = res.data.data[0].subject;
+          this.paperName = res.data.data[0].name;
+          this.remainingTime = +res.data.data[0].testtimes * 60;
+          this.questionString = res.data.data[0].questions;
+          this.initPage();
+        }
+      })
+    },
+    getTempAnswer(val) {
+      axios({
+        method: 'GET',
+        url: servicePath.getTempAnswer,
+        params: {
+          paperId: this.id,
+          studentnumber: this.studentNo,
+          index: +val-1
+        },
+        withCredentials: true
+      }).then(res => {
+        // console.log(res);
+        if(res.status == '200') {
+          this.$refs.mychild.setanswer(res.data.answer);
+          this.answer = res.data.answer;
+          // console.log(this.answer, '=======');
+        }
+      })
+    },
+    saveAnswer(val) {
+      const tempdata = {
+        paperId: this.id,
+        studentnumber: this.studentNo,
+        tempanswer: this.answer,
+        questionId: +val-1
+      };
+      // this.answer = '';
+      axios({
+        method: 'POST',
+        url: servicePath.saveAnswer,
+        data: tempdata,
+        withCredentials: true
+      }).then(res => {
+        // console.log(res);
+        if(res.status == '200') {
+          this.isFirstSave = false;
+        }
+      })
+    },
     start() {
       this.show = false;
       this.countdawn();
+      this.getQuestionInfo(1);
+      localStorage.setItem("index", 1);
     },
     back() {
       this.$router.go(-1);
@@ -136,10 +225,51 @@ export default {
 // 　　},
     submitAnswer() {
       console.log('试卷提交完成');
-      this.$router.push({name:'Exam'});
+      let index = localStorage.getItem("index");
+      const tempdata = {
+        paperId: this.id,
+        studentnumber: this.studentNo,
+        tempanswer: this.answer,
+        questionId: +index-1,
+        submit: true
+      };
+      axios({
+        method: 'POST',
+        url: servicePath.saveAnswer,
+        data: tempdata,
+        withCredentials: true
+      }).then(res => {
+        // console.log(res);
+        if(res.status == '200') {
+          this.isFirstSave = false;
+          this.$message.success("试卷提交成功！");
+          this.$router.push({name:'Exam'});        
+        }
+      })
+    },
+    getQuestionInfo(val) {
+      let id = +this.questionIdArr[val-1];
+      axios({
+        method: 'GET',
+        url: servicePath.getQuestionInfo,
+        params: {questionId: id},
+        withCredentials: true
+      }).then(res => {
+        // console.log(res);
+        this.questionItem = res.data.data[0];
+        this.questionItem.id = val;
+      })
     },
     handleCurrentChange(val) {
-      this.questionItem = this.questionsList[val-1];
+      // this.questionItem = this.questionsList[val-1];
+      this.isChange = false;
+      this.getQuestionInfo(val);
+      // if(!this.isFirstSave) {
+        this.getTempAnswer(val);
+      // }
+      let index = localStorage.getItem("index");
+      localStorage.setItem("index", val);
+      this.saveAnswer(index);
     },
     countdawn() {
       this.timerFlag = setInterval(()=>{
@@ -190,7 +320,7 @@ export default {
         width: 50px;
       }
       input{
-        width: 60px;
+        // width: 60px;
         height: 26px;
         border: none;
         pointer-events: none;
@@ -217,8 +347,9 @@ export default {
   }
   .container {
     margin: 20px 0;
+    height: 80%;
     min-width: 800px;
-    min-height: 600px;
+    min-height: 540px;
     display: flex;
     .left {
       width: 25%;

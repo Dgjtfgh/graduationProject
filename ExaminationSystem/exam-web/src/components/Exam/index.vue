@@ -12,39 +12,39 @@
         </div>
         <div class="paper">
           <el-table
-            :data="textPaperData"
+            :data="this.testPaperList"
             style="width: 100%; height: 100%"
             max-height="450"
             @row-dblclick="enterPaper"
             >
             <el-table-column
-              prop="id"
+              prop="paperId"
               label="试卷ID"
-              width="100">
+              width="80">
             </el-table-column>
             <el-table-column
               prop="name"
               label="试卷名"
-              width="150">
+              width="220">
             </el-table-column>
             <el-table-column
-              prop="course"
+              prop="subject"
               label="课程"
               width="120">
             </el-table-column>
             <el-table-column
-              prop="starData"
+              prop="startdate"
               label="开始日期"
-              width="150">
+              width="180">
             </el-table-column>
             <el-table-column
-              prop="endData"
+              prop="enddate"
               label="结束日期"
-              width="150">
+              width="180">
             </el-table-column>
             <el-table-column
+              prop="testPaperStatus"
               label="状态">
-              未开始
             </el-table-column>
           </el-table>
         </div>
@@ -54,16 +54,14 @@
 <script>
 import axios from "axios"
 import servicePath from "@/config/ApiUrl"
+import moment from 'moment'
 export default {
     data() {
       return {
-        course: [
-          "高数", '英语', 'C++', 'Java',
-          "高数", '英语', 'C++', 'Java',
-          "高数", '英语', 'C++', 'Java',
-          "高数", '英语', 'C++', 'Java',
-        ],
-        textPaperData: [
+        course: [],
+        currentSubject: '',
+        testPaperStatus: '',
+        testPaperData: [
           {
             id: 1,
             name: 'C++综合测试卷A',
@@ -167,6 +165,24 @@ export default {
     },
     created() {
       this.getCourseInfo();
+      this.getTestPaperList();
+    },
+    computed: {
+      testPaperList: function () {
+        return this.testPaperData.map((currentValue,index,arr) => {
+          // console.log(currentValue);
+          let nowDate = new Date();
+          if(new Date(currentValue.startdate) < nowDate) {
+            currentValue.testPaperStatus = '待考'
+          } else {
+            // console.log(currentValue.startdate, )
+            currentValue.testPaperStatus = '未开考'
+          }
+          currentValue.startdate = moment(currentValue.startdate).format('YYYY-MM-DD HH:mm:ss');
+          currentValue.enddate = moment(currentValue.enddate).format('YYYY-MM-DD HH:mm:ss');
+          return currentValue;
+        })
+      },
     },
     methods: {
       getCourseInfo() {
@@ -181,15 +197,36 @@ export default {
           }
         })
       },
+      getTestPaperList(){
+        axios({
+          method: 'GET',
+          url: servicePath.getTestPaperList,
+          params: {
+            subject: this.currentSubject
+          },
+          withCredentials: true
+        }).then(res => {
+          console.log(res);
+          if(res.status == '200') {
+            this.testPaperData = res.data.data;
+          }
+        })
+      },
       selectCourse(value) {
         console.log(value);
+        this.currentSubject = value;
+        this.getTestPaperList();
       },
       enterPaper(row, column, event) {
-        // console.log(row, column, event);
-        this.$router.push({  // this.$route.query.name
-          path: '/exampaper',
-          query: {
-            id: row.id
+        console.log(row, column, event);
+        if(row.testPaperStatus == '未开考') {
+          this.$message.warning("这门考试还未开始！请等待...");
+          return;
+        }
+        this.$router.push({
+          name: 'ExamPaper',
+          params: {
+            id: row.paperId
           }
         });
       }
@@ -204,7 +241,7 @@ export default {
   // width: 100%;
   height: 600px;
   .container{
-    width:770px;
+    width:870px;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -235,7 +272,7 @@ export default {
       }
     }
     .paper{
-      width: 800px;
+      width: 900px;
     }
   }
 }
