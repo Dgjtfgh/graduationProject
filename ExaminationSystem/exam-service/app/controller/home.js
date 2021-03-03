@@ -131,7 +131,7 @@ class HomeController extends Controller {
 
   async saveTestPaper() {
     const { ctx } = this;
-    console.log(ctx.request.body, '+++++++++');
+    // console.log(ctx.request.body, '+++++++++');
     let result;
     let insertSuccess, insertId;
     if(ctx.request.body.paperId) {
@@ -183,13 +183,20 @@ class HomeController extends Controller {
     const { ctx } = this;
     // console.log(ctx.request.query, '+++++++++');
     let result;
-    let res;
+    // let res;
     // let date = sd.format(new Date(), 'YYYY-MM-DD HH:mm:ss');
     if (ctx.request.query.writer) {
       const sql = "SELECT paperId,name,subject,startdate,enddate FROM testpapertable WHERE writer = '" + ctx.request.query.writer + "' AND startdate >  now()";
       result = await this.app.mysql.query(sql);
       // console.log(result);
-    } else {}
+    } else if (ctx.request.query.subject) {
+      const sql = "SELECT paperId,name,subject,startdate,enddate FROM testpapertable WHERE subject = '" + ctx.request.query.subject + "' AND enddate >  now()";
+      result = await this.app.mysql.query(sql);
+      // console.log(result);
+    } else {
+      const sql = "SELECT paperId,name,subject,startdate,enddate FROM testpapertable WHERE enddate >  now()";
+      result = await this.app.mysql.query(sql);
+    }
     this.ctx.body = {
       data: result
     }
@@ -216,6 +223,123 @@ class HomeController extends Controller {
     this.ctx.body = {
       data: result
     }
+  }
+
+  async getQuestionInfo() {
+    const { ctx } = this;
+    // console.log(ctx.request.query, '+++++++++');
+    const result = await this.app.mysql.select('questiontable', {
+      where: {
+        questionId: ctx.request.query.questionId
+      }
+    })
+    this.ctx.body = {
+      data: result
+    }
+  }
+
+  async saveAnswer() {
+    const { ctx } = this;
+    // console.log(ctx.request.body, '+++++++++');
+    let result;
+    let insertSuccess, insertId;
+    const sql = "SELECT tempanswer FROM testpaperanswertable WHERE paperId='" + ctx.request.body.paperId +"' AND studentnumber='" + ctx.request.body.studentnumber + "'";
+    const temp = await this.app.mysql.query(sql);
+    let dataString = JSON.stringify(temp);
+    let tempdata = JSON.parse(dataString);
+    let arr = [];
+    if(tempdata.length>=1) {
+      let answerString;
+      if(tempdata[0].tempanswer.indexOf('@') != -1) {
+        arr = tempdata[0].tempanswer.split('@');
+        arr[ctx.request.body.questionId] = ctx.request.body.tempanswer;
+        // console.log(arr);
+        answerString = arr[0];
+      } else {
+        arr[0] = tempdata[0].tempanswer;
+        arr[ctx.request.body.questionId] = ctx.request.body.tempanswer;
+      }
+      answerString = arr[0];
+      for (let i = 1; i < arr.length; i++) {
+        if(arr[i] == undefined) {
+          arr[i] = '';
+        }
+        // console.log(arr[i]);
+        answerString += '@'+arr[i];
+      }
+      const options = {  where: {paperId: ctx.request.body.paperId, studentnumber: ctx.request.body.studentnumber}};
+      // console.log(answerString, '33333');
+      let data;
+      if(ctx.request.body.submit) {
+        data = {
+          tempanswer: answerString,
+          answer: answerString
+        }
+      } else {
+        data = {
+          tempanswer: answerString,
+        }
+      }
+      result = await this.app.mysql.update('testpaperanswertable', data, options);
+      insertSuccess = result.affectedRows === 1;
+    } else {
+      if(ctx.request.body.submit) {
+        data = {
+          paperId: ctx.request.body.paperId,
+          studentnumber: ctx.request.body.studentnumber,
+          tempanswer: answerString,
+          answer: answerString
+        }
+      } else {
+        data = {
+          paperId: ctx.request.body.paperId,
+          studentnumber: ctx.request.body.studentnumber,
+          tempanswer: answerString,
+        }
+      }
+      result = await this.app.mysql.insert('testpaperanswertable', data);
+      insertSuccess = result.affectedRows === 1;
+      insertId = result.insertId;
+    }
+    
+    this.ctx.body = {
+      isScuccess: insertSuccess,
+      insertId,
+    };
+  }
+
+  async getTempAnswer() {
+    const { ctx } = this;
+    // console.log(ctx.request.query, '+++++++++');
+    const sql = "SELECT tempanswer FROM testpaperanswertable WHERE paperId='" + ctx.request.query.paperId +"' AND studentnumber='" + ctx.request.query.studentnumber + "'";
+    const result = await this.app.mysql.query(sql);
+    let dataString = JSON.stringify(result);
+    let tempdata = JSON.parse(dataString);
+    // console.log(result, '++++');
+    let arr = [];
+    if(tempdata.length>=1) {
+      if(tempdata[0].tempanswer.indexOf('@') != -1) {
+        arr = tempdata[0].tempanswer.split('@')
+      } else {
+        arr[0] = tempdata[0].tempanswer;
+      }
+      // console.log(arr);
+      
+      if(arr[ctx.request.query.index] != 'undefine') {
+        // console.log(arr[ctx.request.query.index], '+++')
+        let res = arr[ctx.request.query.index];
+        this.ctx.body = {
+          answer: res
+        }
+      } else {
+        this.ctx.body = {
+         answer: ''
+        }
+      }
+      // console.log(arr);
+      
+    }
+    
   }
 
 }

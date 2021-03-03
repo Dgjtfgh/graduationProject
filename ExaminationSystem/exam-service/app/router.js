@@ -19,4 +19,7 @@ module.exports = app => {
   router.get('/getTestPaperList',adminauth, controller.home.getTestPaperList);
   router.post('/deleteTestPaper',adminauth, controller.home.deleteTestPaper);
   router.get('/getTestPaperInfo',adminauth, controller.home.getTestPaperInfo);
+  router.get('/getQuestionInfo',adminauth, controller.home.getQuestionInfo);
+  router.post('/saveAnswer',adminauth, controller.home.saveAnswer);
+  router.get('/getTempAnswer',adminauth, controller.home.getTempAnswer);
 };
