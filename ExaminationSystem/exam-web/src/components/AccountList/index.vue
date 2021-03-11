@@ -104,8 +104,13 @@ export default {
                 url: servicePath.getAllUserInfo,
                 withCredentials: true
             }).then(res => {
-                console.log(res);
-                this.AccountData = res.data.data;
+                // console.log(res);
+                if(res.data.data == "没有登录") {
+                  this.$router.push({name:'Login'});
+                  localStorage.clear();
+                }else {
+                  this.AccountData = res.data.data;
+                }
             })
         },
         filterSF(value, row) {

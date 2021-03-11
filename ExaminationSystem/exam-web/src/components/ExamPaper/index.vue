@@ -99,7 +99,7 @@ export default {
   },
   methods: {
     changeanswer(value) {
-      console.log(value);
+      // console.log(value);
       this.isChange = true;
       // this.answerList[this.questionItem.questionId] = value;
       this.answer = value;
@@ -132,10 +132,15 @@ export default {
           withCredentials: true
         }).then(res => {
           // console.log(res);
-          this.studentName = res.data.data[0].name;
-          this.studentNo = res.data.data[0].number;
-          this.college = res.data.data[0].college;
-          this.professional = res.data.data[0].major;
+          if(res.data.data == "没有登录") {
+            this.$router.push({name:'Login'});
+            localStorage.clear();
+          }else {
+            this.studentName = res.data.data[0].name;
+            this.studentNo = res.data.data[0].number;
+            this.college = res.data.data[0].college;
+            this.professional = res.data.data[0].major;
+          }
         })
       },
     getTestPaperInfo() {
@@ -179,6 +184,7 @@ export default {
       const tempdata = {
         paperId: this.id,
         studentnumber: this.studentNo,
+        subject: this.course,
         tempanswer: this.answer,
         questionId: +val-1
       };
@@ -224,7 +230,7 @@ export default {
 //       }
 // 　　},
     submitAnswer() {
-      console.log('试卷提交完成');
+      // console.log('试卷提交完成');
       let index = localStorage.getItem("index");
       const tempdata = {
         paperId: this.id,

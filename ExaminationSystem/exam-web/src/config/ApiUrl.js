@@ -15,7 +15,12 @@ let servicePath = {
     getTestPaperInfo: Url + 'getTestPaperInfo',
     getQuestionInfo: Url + 'getQuestionInfo',
     saveAnswer: Url + 'saveAnswer',
-    getTempAnswer: Url + 'getTempAnswer'
+    getTempAnswer: Url + 'getTempAnswer',
+    getTestPaperAnswerList: Url + 'getTestPaperAnswerList',
+    getPaperQuestion: Url + 'getPaperQuestion',
+    insterScore: Url + 'insterScore',
+    getTestResult: Url + 'getTestResult',
+    getAnswerPaper: Url + 'getAnswerPaper'
 }
 
 export default servicePath;

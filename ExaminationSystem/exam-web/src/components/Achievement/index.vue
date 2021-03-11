@@ -11,14 +11,14 @@
         max-height="450"
       >
         <el-table-column
-          prop="courseID"
+          prop="paperId"
           label="课程ID"
-          width="100">
+          width="180"
+          >
         </el-table-column>
         <el-table-column
-          prop="courseName"
+          prop="subject"
           label="课程名"
-          width="150"
         >
         </el-table-column>
         <el-table-column
@@ -27,19 +27,32 @@
           width="120">
         </el-table-column>
         <el-table-column
-          prop="grade"
+          prop="totalgrade"
           label="成绩"
-          width="150">
+          width="120">
         </el-table-column>
         <el-table-column
-          prop="status"
-          label="状态">
+          prop="tag"
+          label="状态"
+          width="180">
+          <template slot-scope="scope">
+            <el-tag
+              :type="scope.row.tag === '未通过' ? 'danger' : 'success'"
+              disable-transitions>{{scope.row.tag}}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="haveCredit"
+          label="获得学分"
+          width="120">
         </el-table-column>
       </el-table>
     </div>
   </div>
 </template>
 <script>
+import axios from "axios"
+import servicePath from "@/config/ApiUrl"
 export default {
     data () {
       return {
@@ -179,15 +192,33 @@ export default {
             status: '通过'
           }
         ]
-        
       }
     },
     filters: {
 
     },
+    created() {
+      this.getTestResult();
+    },
     methods: {
+      getTestResult() {
+        const number = localStorage.getItem("username");
+        axios({
+          method: 'GET',
+          url: servicePath.getTestResult,
+          params: {
+            studentnumber: number,
+            subject: this.course
+          },
+          withCredentials: true
+        }).then(res => {
+          // console.log(res);
+          this.courseData = res.data.data;
+        })
+      },
       search() {
-        
+        // console.log(this.course);
+        this.getTestResult();
       }
     }
 }

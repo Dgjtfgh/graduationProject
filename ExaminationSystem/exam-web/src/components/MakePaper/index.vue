@@ -270,7 +270,12 @@ export default {
             }).then(res => {
                 // console.log(res);
                 if(res.status == '200') {
-                    this.subjectList = res.data.data;
+                    if(res.data.data == "没有登录") {
+                        this.$router.push({name:'Login'});
+                        localStorage.clear();
+                    }else {
+                        this.subjectList = res.data.data;
+                    }
                 }
             })
         },

@@ -15,7 +15,6 @@
             :data="this.testPaperList"
             style="width: 100%; height: 100%"
             max-height="450"
-            @row-dblclick="enterPaper"
             >
             <el-table-column
               prop="paperId"
@@ -45,6 +44,16 @@
             <el-table-column
               prop="testPaperStatus"
               label="状态">
+              <template slot-scope="scope">
+              <el-button
+                size="mini"
+                round
+                plain
+                :type="scope.row.testPaperStatus == '进入考试' ? 'danger' : ''"
+                :disabled="scope.row.testPaperStatus == '进入考试' ? false : true"
+                @click="enterPaper(scope.row)"
+                disable-transitions>{{scope.row.testPaperStatus}}</el-button>
+            </template>
             </el-table-column>
           </el-table>
         </div>
@@ -61,119 +70,25 @@ export default {
         course: [],
         currentSubject: '',
         testPaperStatus: '',
-        testPaperData: [
-          {
-            id: 1,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 2,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 3,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 4,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 5,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 6,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 7,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 8,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 9,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 10,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 11,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 12,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 13,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          },
-          {
-            id: 14,
-            name: 'C++综合测试卷A',
-            course: 'C++程序设计',
-            starData: '2021-3-2 0:0:0',
-            endData: '2021-3-17 24:0:0'
-          }
-        ]
+        testPaperData: [],
+        answerPaper: []
       }
     },
     created() {
-      this.getCourseInfo();
-      this.getTestPaperList();
+      this.init();
     },
     computed: {
       testPaperList: function () {
         return this.testPaperData.map((currentValue,index,arr) => {
           // console.log(currentValue);
+          // console.log(this.answerPaper)
           let nowDate = new Date();
           if(new Date(currentValue.startdate) < nowDate) {
-            currentValue.testPaperStatus = '待考'
+            if(this.answerPaper.includes(currentValue.paperId)) {
+              currentValue.testPaperStatus = '已考'
+            } else {
+              currentValue.testPaperStatus = '进入考试'
+            }
           } else {
             // console.log(currentValue.startdate, )
             currentValue.testPaperStatus = '未开考'
@@ -185,6 +100,27 @@ export default {
       },
     },
     methods: {
+      async init() {
+        await this.getAnswerPaper();
+        await this.getCourseInfo();
+        await this.getTestPaperList();
+      },
+      getAnswerPaper() {
+        let number = localStorage.getItem('username');
+        axios({
+          method: 'GET',
+          url: servicePath.getAnswerPaper,
+          params: {
+            number: number
+          },
+          withCredentials: true
+        }).then(res => {
+          // console.log(res);
+          this.answerPaper = res.data.data.map(item => {
+            return item.paperId
+          })
+        }) 
+      },
       getCourseInfo() {
         axios({
           method: 'GET',
@@ -193,7 +129,12 @@ export default {
         }).then(res => {
           // console.log(res);
           if(res.status == '200') {
-            this.course = res.data.data;
+            if(res.data.data == "没有登录") {
+              this.$router.push({name:'Login'});
+              localStorage.clear();
+            }else {
+              this.course = res.data.data;
+            }
           }
         })
       },
@@ -206,19 +147,19 @@ export default {
           },
           withCredentials: true
         }).then(res => {
-          console.log(res);
+          // console.log(res);
           if(res.status == '200') {
             this.testPaperData = res.data.data;
           }
         })
       },
       selectCourse(value) {
-        console.log(value);
+        // console.log(value);
         this.currentSubject = value;
         this.getTestPaperList();
       },
-      enterPaper(row, column, event) {
-        console.log(row, column, event);
+      enterPaper(row) {
+        // console.log(row);
         if(row.testPaperStatus == '未开考') {
           this.$message.warning("这门考试还未开始！请等待...");
           return;

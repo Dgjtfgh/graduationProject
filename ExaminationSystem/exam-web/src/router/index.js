@@ -57,14 +57,6 @@ let router = new Router({
                 requireAuth: true, role: '学生'
               }
             },
-            // {
-            //   path: 'exampaper',
-            //   name: 'ExamPaper',
-            //   component: () => import('@/components/ExamPaper/index'),
-            //   meta: {
-            //     requireAuth: true, role: '学生'
-            //   }
-            // },
             {
               path: 'achievement',
               name: 'Achievement',
@@ -107,6 +99,14 @@ let router = new Router({
       component: () => import('@/components/ExamPaper/index'),
       meta: {
         requireAuth: true, role: '学生'
+      }
+    },
+    {
+      path: '/correctdetail',
+      name: 'CorrectDetail',
+      component: () => import('@/components/CorrectPaper/correctpaper'),
+      meta: {
+        requireAuth: true, role: '老师'
       }
     },
     {

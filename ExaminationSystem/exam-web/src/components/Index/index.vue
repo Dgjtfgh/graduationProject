@@ -180,18 +180,24 @@ export default {
           withCredentials: true
         }).then(res => {
           // console.log(res);
-          this.ruleForm.name = res.data.data[0].name;
-          this.ruleForm.number = res.data.data[0].number;
-          this.ruleForm.college = res.data.data[0].college
-          this.ruleForm.major = res.data.data[0].major
-          this.ruleForm.sex = res.data.data[0].sex;
-          this.ruleForm.sf = res.data.data[0].sf;
-          // this.password = res.data.data[0].password;
-          if(res.data.data[0].number == res.data.data[0].password) {
-            this.isFristLogin = true;
-            this.ruleForm.changePass = true;
-            this.changeUserInfo();
+          if(res.data.data == "没有登录") {
+            this.$router.push({name:'Login'});
+            localStorage.clear();
+          }else {
+            this.ruleForm.name = res.data.data[0].name;
+            this.ruleForm.number = res.data.data[0].number;
+            this.ruleForm.college = res.data.data[0].college
+            this.ruleForm.major = res.data.data[0].major
+            this.ruleForm.sex = res.data.data[0].sex;
+            this.ruleForm.sf = res.data.data[0].sf;
+            // this.password = res.data.data[0].password;
+            if(res.data.data[0].number == res.data.data[0].password) {
+              this.isFristLogin = true;
+              this.ruleForm.changePass = true;
+              this.changeUserInfo();
+            }
           }
+          
         })
       },
       submitForm() {
