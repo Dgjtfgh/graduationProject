@@ -22,4 +22,9 @@ module.exports = app => {
   router.get('/getQuestionInfo',adminauth, controller.home.getQuestionInfo);
   router.post('/saveAnswer',adminauth, controller.home.saveAnswer);
   router.get('/getTempAnswer',adminauth, controller.home.getTempAnswer);
+  router.get('/getTestPaperAnswerList',adminauth, controller.home.getTestPaperAnswerList);
+  router.get('/getPaperQuestion',adminauth, controller.home.getPaperQuestion);
+  router.post('/insterScore',adminauth, controller.home.insterScore);
+  router.get('/getTestResult',adminauth, controller.home.getTestResult);
+  router.get('/getAnswerPaper',adminauth, controller.home.getAnswerPaper);
 };
