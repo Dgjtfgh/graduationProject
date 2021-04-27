@@ -5,12 +5,14 @@
  */
 module.exports = app => {
   const { router, controller } = app;
-  const adminauth = app.middleware.adminauth();
+  const adminauth = app.middleware.adminauth(); // 调用中间件
   router.get('/', controller.home.index);
   router.post('/checkLogin', controller.home.checkLogin);
   router.get('/getUserInfo',adminauth, controller.home.getUserInfo);
   router.get('/getAllUserInfo',adminauth, controller.home.getAllUserInfo);
+  router.get('/searchAccount',adminauth, controller.home.searchAccount);
   router.post('/deleteUserAccount',adminauth, controller.home.deleteUserAccount);
+  router.post('/resetPasswords',adminauth, controller.home.resetPasswords);
   router.post('/addAccount',adminauth, controller.home.addAccount);
   router.post('/updateUserInfo',adminauth, controller.home.updateUserInfo);
   router.get('/getCourseInfo',adminauth, controller.home.getCourseInfo);

@@ -9,15 +9,15 @@ class HomeController extends Controller {
     ctx.body = 'hi, egg';
   }
 
-  async checkLogin() {
+  async checkLogin() {  // 验证登录
     const { ctx } = this;
     // console.log(ctx.request.body, '+++++++++');
     const username = ctx.request.body.username;
     const password = ctx.request.body.password;
     const sf = ctx.request.body.sf;
-    const sql = "SELECT number FROM usertable WHERE number = '" + username + "' AND password = '" + password + "' AND sf = '" + sf + "'";
+    const sql = "SELECT number FROM usertable WHERE number = '" + username + 
+      "' AND password = '" + password + "' AND sf = '" + sf + "'";
     const res = await this.app.mysql.query(sql);
-
     if (res.length > 0) {
       this.ctx.session.id = username;
       this.ctx.body = {
@@ -43,22 +43,44 @@ class HomeController extends Controller {
   }
 
   async getAllUserInfo() {
-    const sql = "SELECT * FROM usertable";
+    const sql = "SELECT * FROM usertable WHERE number not in ('admin')";
     const result = await this.app.mysql.query(sql);
     this.ctx.body = {
       data: result
     };
   }
 
-  async deleteUserAccount() {
+  async searchAccount() {  // 模糊查找账户
     const { ctx } = this;
-    // console.log(ctx.request.body, '+++++++++');
+    const string = ctx.request.query.string;
+    const sql = "SELECT * FROM usertable WHERE CONCAT(`number`,`name`) LIKE '%"+ string +"%'";
+    const result = await this.app.mysql.query(sql);
+    this.ctx.body = {
+      data: result
+    };
+  }
+  async deleteUserAccount() { // 删除账户
+    const { ctx } = this;
     const number = ctx.request.body.number;
     const sf = ctx.request.body.sf;
     const result = await this.app.mysql.delete('usertable', { number, sf });
     this.ctx.body = {
       data: result
     }
+  }
+  async resetPasswords() {  // 重置密码
+    const { ctx } = this;
+    // console.log(ctx.request.body, '+++++++++');
+    const number = ctx.request.body.number;
+    const userData = {
+      password: number
+    }
+    const options = {  where: {number: number}};
+    const result = await this.app.mysql.update('usertable', userData, options);
+    const updateSuccess = result.affectedRows === 1;
+    this.ctx.body = {
+      isScuccess: updateSuccess,
+    };
   }
 
   async addAccount() {
@@ -151,7 +173,6 @@ class HomeController extends Controller {
       insertSuccess = result.affectedRows === 1;
       insertId = result.insertId;
     }
-    
     this.ctx.body = {
       isScuccess: insertSuccess,
       insertId,
@@ -160,43 +181,38 @@ class HomeController extends Controller {
 
   async getQuestionList() {
     const { ctx } = this;
-    // console.log(ctx.request.query, '+++++++++');
     let result;
     if(ctx.request.query.type) {
       result = await this.app.mysql.select('questiontable', {
         where: {
           subject: ctx.request.query.type
         }, 
-        // limit: 10, //查询条数
-        // offset: 0 //数据偏移量（分页查询使用）
       })
     } else {
       result = await this.app.mysql.select('questiontable');
     }
-    // console.log(result);
     this.ctx.body = {
       data: result
     };
   }
 
-  async getTestPaperList() {
+  async getTestPaperList() { // 获取试卷列表
     const { ctx } = this;
-    // console.log(ctx.request.query, '+++++++++');
     let result;
     if (ctx.request.query.writer) {
       let sql;
       if (ctx.request.query.isEnd) {
-        sql = "SELECT paperId,name,subject,startdate,enddate FROM testpapertable WHERE writer = '" + ctx.request.query.writer + "' AND enddate <  now()";
-        // sql = "SELECT t.paperId,t.name,t.subject,t.startdate,t.enddate,s.credit FROM testpapertable t, subjecttable s WHERE t.writer = '" + ctx.request.query.writer + "' AND t.subject = s.subjectName";
+        sql = "SELECT paperId,name,subject,startdate,enddate FROM testpapertable WHERE writer = '" + 
+        ctx.request.query.writer + "' AND enddate <  now()";
       } else {
-        sql = "SELECT paperId,name,subject,startdate,enddate FROM testpapertable WHERE writer = '" + ctx.request.query.writer + "' AND startdate >  now()";
+        sql = "SELECT paperId,name,subject,startdate,enddate FROM testpapertable WHERE writer = '" + 
+        ctx.request.query.writer + "' AND startdate >  now()";
       } 
       result = await this.app.mysql.query(sql);
-      // console.log(result);
     } else if (ctx.request.query.subject) {
-      const sql = "SELECT paperId,name,subject,startdate,enddate FROM testpapertable WHERE subject = '" + ctx.request.query.subject + "' AND enddate >  now()";
+      const sql = "SELECT paperId,name,subject,startdate,enddate FROM testpapertable WHERE subject = '" + 
+      ctx.request.query.subject + "' AND enddate >  now()";
       result = await this.app.mysql.query(sql);
-      // console.log(result);
     } else {
       const sql = "SELECT paperId,name,subject,startdate,enddate FROM testpapertable WHERE enddate >  now()";
       result = await this.app.mysql.query(sql);
@@ -206,24 +222,20 @@ class HomeController extends Controller {
     }
   }
 
-  async deleteTestPaper() {
+  async deleteTestPaper() {  // 删除试卷
     const { ctx } = this;
-    // console.log(ctx.request.body, '+++++++++');
     const result = await this.app.mysql.delete('testpapertable', { paperId: ctx.request.body.paperId });
     this.ctx.body = {
       data: result
     }
   }
-
-  async getTestPaperInfo() {
+  async getTestPaperInfo() {  // 获取试卷详细信息
     const { ctx } = this;
-    // console.log(ctx.request.query, '+++++++++');
     const result = await this.app.mysql.select('testpapertable', {
       where: {
         paperId: ctx.request.query.paperId
       }
     })
-    // console.log(result)
     this.ctx.body = {
       data: result
     }
@@ -360,7 +372,7 @@ class HomeController extends Controller {
     let tempdata = JSON.parse(dataString);
     // console.log(tempdata, "=====");
     let res = tempdata.map(item => {
-      if(item.totalgrade == 0) {
+      if(item.totalgrade == -1) {
         item.tag = '待批阅';
       } else {
         item.tag = '已批阅';
