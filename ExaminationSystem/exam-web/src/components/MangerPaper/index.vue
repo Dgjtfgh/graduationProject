@@ -191,7 +191,7 @@ export default {
 #mangerpaper{
   .container{
     height: 100%;
-    min-height: 620px;
+    min-height: 480px;
     background: #cedbf0;
     padding: 10px;
     border-radius: 10px;

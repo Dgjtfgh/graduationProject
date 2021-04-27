@@ -31,9 +31,9 @@
       <div class="login" >
         <div class= "icon login_icon"></div> <p>欢迎！{{this.name}}</p>
       </div>
-      <!-- <div class="login" @click="jumpRegister()">
-        <div class= "icon register_icon" ></div> <p>注册</p>
-      </div> -->
+      <div class="login">
+        <div class= "icon register_icon" ></div> <p>{{this.sf}}</p>
+      </div>
       <div class="login" @click="exit()">
         <div class= "icon cancel_icon"></div> <p class="p">注销</p>
       </div>
@@ -141,9 +141,9 @@ export default {
 .login .login_icon {
   background-image: url("../../assets/login_press.png");
 }
-/* .login .register_icon {
-  background-image: url("../../assets/register.png");
-} */
+.login .register_icon {
+  background-image: url("../../assets/sf_press.png");
+}
 .login .cancel_icon {
   background-image: url("../../assets/cancel_press.png");
 }

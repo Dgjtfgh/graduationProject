@@ -91,19 +91,19 @@ import servicePath from "@/config/ApiUrl"
 export default {
     data () {
       var validatePass = (rule, value, callback) => {
-        if (value === '') {
+        if (value == '') {
           callback(new Error('请输入密码'));
         } else {
-          if (this.ruleForm.checkNewPass !== '') {
+          if (this.ruleForm.checkNewPass != '') {
             this.$refs.ruleForm.validateField('checkNewPass');
           }
           callback();
         }
       };
       var validatePass2 = (rule, value, callback) => {
-        if (value === '') {
+        if (value == '') {
           callback(new Error('请再次输入密码'));
-        } else if (value !== this.ruleForm.newPassword) {
+        } else if (value != this.ruleForm.newPassword) {
           callback(new Error('两次输入密码不一致!'));
         } else {
           callback();
@@ -135,16 +135,8 @@ export default {
             { required: true, message: '填写姓名', trigger: 'blur' }
           ]
         },
-        // name: '肖文凯',
-        // no: '201720181819',
-        // college: '软件学院',
-        // professional: '软件工程',
-        // sex: '男',
-        // sf: '学生',
+        
         isFristLogin: false,
-        // oldPassword: '',
-        // newPassword: '',
-        // checkNewPass: '',
         changeButton: '修改信息',
         changeInfo: false,
       }
@@ -153,9 +145,6 @@ export default {
       this.getUserInfo();
     },
     mounted() {
-      // if(this.isFristLogin) {
-      //   this.changeUserInfo();
-      // }
     },
     methods: {
       isChangePass() {
@@ -166,10 +155,8 @@ export default {
       },
       getUserInfo() {
         // console.log(this.$route.params);
-        // const number = this.$route.params.number;
         const number = localStorage.getItem("username");
         const sf = localStorage.getItem("sf");
-        // console.log(sf);
         axios({
           method: 'GET',
           url: servicePath.getUserInfo,
@@ -191,7 +178,7 @@ export default {
             this.ruleForm.sex = res.data.data[0].sex;
             this.ruleForm.sf = res.data.data[0].sf;
             // this.password = res.data.data[0].password;
-            if(res.data.data[0].number == res.data.data[0].password) {
+            if(res.data.data[0].number!='admin' && res.data.data[0].number == res.data.data[0].password) {
               this.isFristLogin = true;
               this.ruleForm.changePass = true;
               this.changeUserInfo();
@@ -200,29 +187,37 @@ export default {
           
         })
       },
-      submitForm() {
-        axios({
-           method: 'POST',
-           url: servicePath.updateUserInfo,
-           data: this.ruleForm,
-           withCredentials: true
-        }).then(res => {
-          // console.log(res);
-          if(res.data.isScuccess) {
-            if(this.ruleForm.changePass){
-              localStorage.clear();
-              this.$message({
-                type: 'warning',
-                message: '登录失效，请重新登录!'
-              });
-              this.$router.push({name:'Login'});
-            } else {
-              this.$message({
-                type: 'success',
-                message: '信息修改成功!'
-              });
-              this.dialogFormVisible = false;
-            }
+      submitForm(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            axios({
+              method: 'POST',
+              url: servicePath.updateUserInfo,
+              data: this.ruleForm,
+              withCredentials: true
+            }).then(res => {
+              // console.log(res);
+              if(res.data.isScuccess) {
+                if(this.ruleForm.changePass){
+                  localStorage.clear();
+                  this.$message({
+                    type: 'warning',
+                    message: '登录失效，请重新登录!'
+                  });
+                  this.$router.push({name:'Login'});
+                } else {
+                  this.$message({
+                    type: 'success',
+                    message: '信息修改成功!'
+                  });
+                  this.dialogFormVisible = false;
+                }
+              }
+            })
+          }else {
+            // this.$message.error("登录失败！");
+            // console.log('error submit!!');
+            return false
           }
         })
       },
@@ -247,8 +242,8 @@ export default {
   height: 600px;
   .container {
     position: relative;
-    top: 50%;
-    transform: translate(0, -50%);
+    // top: 50%;
+    // transform: translate(0, -50%);
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;

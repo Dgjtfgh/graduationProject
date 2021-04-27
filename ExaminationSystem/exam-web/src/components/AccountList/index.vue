@@ -1,7 +1,7 @@
 <template>
   <div id="accountlist">
     <div class="search">
-      <el-input v-model="number" placeholder="编号"></el-input>
+      <el-input v-model="queryStr" placeholder="输入编号或姓名" @change="search"></el-input>
       <el-button  icon="el-icon-search" @click="search">搜索</el-button>
     </div>
     <div class="container">
@@ -37,10 +37,10 @@
                     label="操作"
                     width="200">
                     <template slot-scope="scope">
-                        <!-- <el-button
+                        <el-button
                         size="mini"
                         @click="handleChange(scope.$index, scope.row)"
-                        >修改</el-button> -->
+                        >初始化密码</el-button>
                         <el-button
                         size="mini"
                         type="danger"
@@ -51,7 +51,6 @@
             </el-table>
         </div>
     </div>
-    
   </div>
 </template>
 <script>
@@ -61,7 +60,7 @@ export default {
     name: "AccountList",
     data () {
       return {
-        number: "",
+        queryStr: "",
         AccountData: [
           {
             number: "132332",
@@ -117,10 +116,52 @@ export default {
             return row.sf === value;
         },
         search() {
-
+          axios({
+            method: 'GET',
+            url: servicePath.searchAccount,
+            params: {string: this.queryStr},
+            withCredentials: true
+          }).then(res => {
+            // console.log(res);
+            if(res.status == '200') {
+              this.AccountData = res.data.data;
+            }
+          })
         },
-        // handleChange() {
-        // },
+        handleChange(index, row) {
+           this.$confirm('此操作将重置密码为初始密码, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                axios({
+                    method: 'POST',
+                    url: servicePath.resetPasswords,
+                    data: row,
+                    withCredentials: true
+                }).then(res => {
+                    console.log(res);
+                    if(res.status == '200') {
+                        this.getAllUserInfo();
+                        this.$message({
+                            type: 'success',
+                            message: '重置成功!'
+                        });
+                    } else {
+                        this.$message({
+                            type: 'error',
+                            message: '重置失败!'
+                        });
+                    }
+                    
+                })
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消重置'
+                });          
+            });
+        },
         handleDelete(index, row) {
             console.log(index, row);
             this.$confirm('此操作将永久删除该账号, 是否继续?', '提示', {
@@ -176,8 +217,8 @@ export default {
   .container{
     margin-top: 10px;
     width: 760px;
-    height: 100%;
-    min-height: 550px;
+    // height: 100%;
+    min-height: 367px;
     background: #cedbf0;
     padding: 20px;
     border-radius: 10px;
@@ -187,7 +228,7 @@ export default {
     transform: translateX(-50%);
     .result{
         width: 760px;
-        height: 550px;
+        // height: 550px;
         overflow: hidden;
         .el-table {
             max-width: unset;

@@ -66,12 +66,15 @@ export default {
                 data: this.ruleForm,
                 withCredentials: true
             }).then(res => {
-                console.log(res);
+                // console.log(res);
                 if(res.data.isScuccess) {
                     this.$message({
                         type: 'success',
                         message: '添加成功!'
                     });
+                    this.ruleForm.number = '';
+                    this.ruleForm.name = '';
+                    // this.ruleForm.sf = '';
                 }
             })
           } else {
@@ -93,11 +96,12 @@ export default {
     height: 600px;
     position: absolute;
     left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    /* top: 50%; */
+    transform: translateX(-50%);
     
 }
 .notice {
+  /* margin-top: 60px; */
     width: 1005;
     min-width: 800px;
     padding: 20px;

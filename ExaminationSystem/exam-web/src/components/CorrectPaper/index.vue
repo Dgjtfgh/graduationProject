@@ -135,7 +135,7 @@ export default {
         const index = this.testPaperList.findIndex(data => data.paperId === id);
         this.testPaperList[index].dicts = res.data.data;
         // this.$set(this.testPaperList[index], 'dicts', res.data.data);
-        // console.log(this.testPaperList, '-----');
+        console.log(this.testPaperList, '-----');
       })
     },
     filterTag(value, row) {
